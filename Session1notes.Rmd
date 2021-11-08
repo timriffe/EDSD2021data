@@ -230,8 +230,38 @@ MIG %>%
                values_to = "immigrations") %>% 
   filter(!is.na(immigrations)) %>% 
   mutate(age = gsub(pattern = "From ", replacement = "", age),
-         age = gsub(pattern = " years", replacement = "", age)) %>% 
- head(100) %>% View()
+         age = gsub(pattern = " years", replacement = "", age),
+         age = recode(age,
+                      "Total"       = "Total" ,
+                       "Less than 5" = "0",
+                       "5 to 9"      = "5",
+                       "10 to 14"    = "10",
+                       "Less than 15" = "0",
+                      "15 to 19"   = "15",
+                      "15 to 64"   = "15",
+                      "20 to 24"   = "20",
+                      "25 to 29"   = "25",
+                      "30 to 34"   = "30" ,
+                      "35 to 39"   = "35",
+                      "40 to 44"   = "40",
+                      "45 to 49"   = "45" ,
+                      "50 to 54"   = "50",
+                      "55 to 59"   = "55" ,
+                      "60 to 64"   = "60",
+                      "65 to 69"   = "65" ,
+                      "65 or over"  = "65",
+                      "70 to 74"   = "70",
+                      "75 to 79"    ="75",
+                      "80 to 84"   = "80",
+                      "85 to 89"   = "85",
+                      "85 or over"  = "85",
+                      "90 to 94"    = "90",
+                      "95 to 99"    ="95",
+                      "100 or over" = "100",
+                      "Unknown"  = "UNK")) 
+  
+  
+
 
 ```
 
