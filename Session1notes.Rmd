@@ -186,6 +186,55 @@ gapminder %>%
 
 Note that the super secret ninja code for the invisible data passing through the pipeline is `.`. But, sometimes it's also called `.data`.
 
+## Worked example
+
+For this example we will wrangle a dataset of immigration from Eurostat.
+
+```{r}
+library(readxl)
+"Data/MIGR_IMM1CTZ__custom.xlsx"
+MIG <- read_excel("Data/MIGR_IMM1CTZ__custom.xlsx", 
+    sheet = "Sheet 1", range = "A11:DR1281", 
+    na = ":")
+
+# This was manual, hackish coding to get the columns
+# right, but if there's an elegant solution I'll show
+# it to you tomorrow.
+years <- 2010:2019
+cat   <- c("Total",	"junk1", 
+           "Reporting country", "junk2",
+           "EU28", "junk3",
+           "Non-EU28",	"junk4",
+           "Stateless", "junk5",	
+           "Unknown", "junk6")
+year_cat <- expand.grid(cat = cat, year = years) %>% 
+  mutate(year_cat = paste(year, cat, sep = "_")) %>% 
+  pull(year_cat)
+
+my_colnames <- c("destination_country",
+                 "age",
+                 year_cat)
+
+colnames(MIG) <- my_colnames
+
+```
+
+Moral of the story, YOU WILL ALWAYS WIN. We now need to recode `age`, to `pivot_longer()`, and throw out the `junk` columns.
+
+```{r}
+MIG %>% 
+  select(-contains("junk")) %>% 
+  pivot_longer(3:ncol(.), 
+               names_to = c("year","cat"),
+               names_sep = "_",
+               values_to = "immigrations") %>% 
+  filter(!is.na(immigrations)) %>% 
+  mutate(age = gsub(pattern = "From ", replacement = "", age),
+         age = gsub(pattern = " years", replacement = "", age)) %>% 
+ head(100) %>% View()
+
+```
+
 
 
 
