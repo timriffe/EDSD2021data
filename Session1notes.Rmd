@@ -1,0 +1,192 @@
+---
+title: "Session 1 Notes"
+author: "Tim Riffe"
+date: "11/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R Markdown
+
+We demonstrated how R markdown works, also inside and R project. I said that R projects are the way to go for keeping your code and documents organized. Indeed, you could create one project called EDSD, which contains all materials for the courses, and each week modules *could* be another project inside of it. Because projects can nest. Does that make sense?
+
+We will work in Markdown to be able to take notes whenever we do new code things. Because note taking makes things memorable.
+
+# Objective
+
+*tidy* data is a particular data layout, which is rectangular, and where rows correspond to observations and columns correspond to variables.
+
+Some examples of not-tidy data were given. I think it's clear enough now.
+
+# `ggplot2` will be the present at the end of the pipe
+
+Ctrl + Alt + i gives me a chunk
+```{r}
+# install.packages("gapminder")
+library(gapminder)
+library(tidyverse)
+library(ggplot2)
+glimpse(gapminder)
+```
+
+Let's make the so-called Preston-curve! This relates GDP per capita to life expectancy
+
+```{r}
+ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap,
+                     y = lifeExp,
+                     size = pop)) +
+  geom_point(mapping = aes(color = continent)) +
+  geom_smooth() +
+  scale_x_log10() +
+  labs(x = "GDP per capita", y = "e(0)",
+       title = "Preston curve example",
+       subtitle = "Data: gapminder")
+```
+
+Declare *global* aesthetic mappings inside the initial `ggplot()` call. If you want control of these to vary depending on which `geom` is being used, then stick the aesthetic mappings inside the respective geoms. We're using default settings for these mappings so far, but you can override them, for example colors. Further modifications to the plot happen via adding statements `+` together.
+
+How to get far fast w `ggplot2`: learn more `geom`s from a cheat sheet. And use online resources to figure out the small details.
+
+One more thing to learn:
+
+```{r}
+ggplot(gapminder,
+       mapping = aes(x = year,
+                     y = lifeExp)) +
+  geom_line(mapping = aes(group = country)) +
+  facet_wrap(~continent) +
+  geom_smooth()
+```
+
+# `dplyr` basics
+
+The toolkit that we will use for constructing tidy pipelines is called `dplyr`. This is a *verbal* approach to data processing. You'll see why:
+
+So, let's explore the basic verbs:
+## `group_by()`
+
+`group_by()` declares discrete / independent groups in the data. Meaning that when you do things to the data, these are done separately for each group, and all at once. This doesn't change the size of the data or its overall shape, it's just an appended piece of metadata
+```{r}
+group_by(gapminder, continent, year)
+```
+
+Note from Sebastian: groups can be removed by using `ungroup()`. And indeed this one can bite you if you forget to do it. You'll see, just wait.
+
+## `pivot_longer()`
+
+`pivot_longer` stacks things. You need to declare two new columns, one for the collected names, and the other for the collected values.
+```{r}
+long <- pivot_longer(gapminder, lifeExp:gdpPercap, 
+             names_to = "variable",
+             values_to = "value")
+```
+
+## `pivot_wider()`
+
+`pivot_wider()`
+
+```{r}
+pivot_wider(long,
+            names_from = variable,
+            values_from = value)
+
+way_too_wide <-
+  pivot_wider(gapminder,
+            names_from = year,
+            values_from = c("lifeExp", "pop", "gdpPercap"))
+```
+
+Let's see how to tidify a way too wide piece of data, because, let's say, the columns are downright nested.
+
+```{r}
+ncol(way_too_wide)
+almost_there <- 
+ way_too_wide %>% 
+  pivot_longer(3:ncol(.),
+             names_to = c("variable","year"),
+             values_to = "value",
+             names_sep = "_")
+pivot_wider(almost_there,
+             names_from = "variable",
+             values_from = "value")
+```
+
+Let's just say: you sometimes need to experiment a bit, but you can pivot your way out of some pretty knarly spreadsheet setups a lot of the time. You might need to be a but creative though.
+
+## `mutate()`
+
+```{r}
+# install.packages("countrycode")
+library(countrycode)
+mutate(gapminder,
+       ISO3 = countryname(country, destination = "iso3c"),
+       x = year - 1950,
+       ALLTHEYEARS = lifeExp * pop,
+       pop = pop / 1000,
+       is_africa = continent == "Africa",
+       high_inc = case_when(
+         lifeExp < 50 ~ "low",
+         lifeExp < 70 ~ "medium",
+         lifeExp < 80 ~"high",
+         TRUE ~ "very high"
+       ))
+
+
+```
+The main thing to know is that `mutate()` changes columns but not rows
+
+
+## `summarize()`
+
+Summarize aggregates over rows, meaning it can reduce the number of rows. Usually we do this for subgroups in the data, so it follows a `group_by()` statement. As with `mutate()`, `summarize()` creates at least one new column, but potentially more. Other columns that aren't used as either groups or as the created output of `summarize` are simply dropped. However, if there is more than one level of grouping on the data, part of the groups might be preserved, and this might BITE YOU. So, just to be sure, and also to turn off annoying warning messages, we add `.groups = "drop"` to the `summarize()` statement.
+
+```{r}
+grouped_by_year <- group_by(gapminder, 
+                            year,
+                            continent)
+summarize(grouped_by_year,
+          pop = sum(pop),
+          lifeExp = mean(lifeExp),
+          .groups = "drop") 
+```
+
+## `filter()`
+
+subsets rows, just beware that commas are interpreted as AND, and also that each comma-separated thing has an implied parentheses around it
+```{r}
+filter(gapminder,
+       year > 2000,
+       continent %in% c("Europe", "Africa"))
+```
+
+## `select()` 
+`select` is for filtering columns, reordering them and renaming them (optionally) in the process of doing so. When constructing a processing pipeline, you probably want to keep the `select`ing to the beginning and end. It helps keep you less confused.
+
+```{r}
+select(gapminder, 
+       year, 
+       lifeExp,
+       Country = country)
+```
+
+## `pipes`
+Ctrl + Shift + m makes a pipe, otherwise you can type it. `%>%` sends the left-side piece of data to the right-side function, by default as its first argument. But you might at times want to override the positioning by using `.`, which was needlessly demonstrated. This is a shirt *pipeline*
+```{r}
+gapminder
+gapminder %>%
+  group_by(continent, year) %>% 
+  summarize(VAR = var(lifeExp),
+            .groups = "drop") %>% 
+  lm(formula = year ~ VAR, data = .)
+```
+
+Note that the super secret ninja code for the invisible data passing through the pipeline is `.`. But, sometimes it's also called `.data`.
+
+
+
+
+
