@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # About me
 				
-Hi, I'm Tim Riffe, a US-American, [CED](https://ced.uab.cat/)-educated (Spain) demographer living in Spain and working at the [Universidad del País Vasco](https://www.ehu.eus/en/web/opik/tim-riffe) as an [Ikerbasque Research Fellow](https://www.ikerbasque.net/es/tim-riffe). I've been hooked on `R` since 2009 when I did [EDSD](https://www.eds-demography.org/), and have since authored several packages, mostly that do demographic things, but sometimes that do plotting things. My own research data preparation, analyses, analytic plotting, and presentation-quality plotting are all done in `R`. I've led introductory wrkshops like [this](https://github.com/timriffe/BSSD2019Module1), [this](https://github.com/timriffe/BSSD2021Module2), or [this](https://github.com/timriffe/KOSTAT_Workshop1), [university courses](https://github.com/timriffe/DemoED), and [bespoke modules](https://github.com/timriffe/RforUNPD2019) such as this one in [2019](https://github.com/timriffe/EDSD2019data) and [2020]([2019](https://github.com/timriffe/EDSD2020data)), but yours will be unique. My own focuses are in programming tools for demographers, formal demography, data visualization, and health demography. Although this module is not about any of those things I hope we get a chance to talk about your work and my work if you're interested.
+Hi, I'm Tim Riffe, a US-American, [CED](https://ced.uab.cat/)-educated (Spain) demographer living in Spain and working at the [Universidad del País Vasco](https://www.ehu.eus/en/web/opik/tim-riffe) as an [Ikerbasque Research Fellow](https://www.ikerbasque.net/es/tim-riffe). I've been hooked on `R` since 2009 when I did [EDSD](https://www.eds-demography.org/), and have since authored several packages, mostly that do demographic things, but sometimes that do plotting things. My own research data preparation, analyses, analytic plotting, and presentation-quality plotting are all done in `R`. I've led introductory wrkshops like [this](https://github.com/timriffe/BSSD2019Module1), [this](https://github.com/timriffe/BSSD2021Module2), or [this](https://github.com/timriffe/KOSTAT_Workshop1), [university courses](https://github.com/timriffe/DemoED), and [bespoke modules](https://github.com/timriffe/RforUNPD2019) such as this EDSD block in [2019](https://github.com/timriffe/EDSD2019data) and [2020]([2019](https://github.com/timriffe/EDSD2020data)), but **yours will be unique**. My own focuses are in programming tools for demographers, formal demography, data visualization, and health demography. Although this module is not about any of those things I hope we get a chance to talk about your work and my work if you're interested.
 				
 # About this module
 
@@ -39,14 +39,11 @@ The route to being an `R` data analyst could be via Base programming, as it was 
 
 All I know is that you've had Christian's intro course, and I assume no more than that. Where necessary I will review concepts. I expect you'll be able to keep up if you type along and take notes as we go, and if you ask questions and tell me to stop, slow down, or repeat when needed. Real learning will happen when you try to apply these concepts on your own, and for this reason I'll give exercises, which we'll then solve together. Often I will set myself up for apparent failure by not having worked through a solution in advance, and you'll see me induce errors and use help resources in a natural way. It's important to see this messy side of programming so that you also learn to make natural use of such resources and to react intelligently to error messages. 
 
-This module consists in a bunch of worked examples, hopefully different enough from one another that by the end you will have mastered the basics, seen a good variety of functionality, and be able to extend your capabilities all by yourself. If you internalize this last bit then you can consider yourself empowered. My personal objective is to impart *attitude* and *confidence*. This class is a safe space.
-
-Practically, we'll mostly be using `dplyr` (and friends) to data wrangle, however any tool that can do the job is in-universe, so we'll see what happens.
+This module consists in a bunch of worked examples, hopefully different enough from one another that by the end you will have mastered the basics, seen a good variety of functionality, and be able to extend your capabilities all by yourself. If you internalize this last bit then you can consider yourself empowered. The formal objective of this module is to get you able to construct _data processing pipelines_ to succinctly process haphazard messy datasets into tidy analyzable datasets via a series of sequential steps, including but limited to reading, parsing, recoding, _pivoting_, harmonizing, joining, grouping, aggregating, and so forth. By the end of the week, you'll be on your way to being able to fluently mix a large palette of these tools in a modular way. We do this course near the beginning of EDSD because these are skills you will use throughout the coming years. Practically, we'll mostly be using `dplyr` (and friends) to data wrangle, however any tool that can do the job is in-universe, so we'll see what happens. My _personal_ objective is to impart *attitude* and *confidence* when dealing with new and messy datasets. This class is a safe space, so please ask, complain, laugh, and join in my bewilderment at the contemporary datascape.
 
 # R markdown basics
 
 Class will happen in R markdown. Indeed, this material was produced in markdown. I'll say why in class and then fill this in.
-
 
 # tidy data
 
@@ -83,11 +80,11 @@ str(gapminder)
 
 ## Basic `ggplot2` with the gapminder data
 
-This course isn't about `ggplot2`, but we'll use it from time to time, and so an explicit section on this will make this less mysterious.
+This course isn't about `ggplot2`, but we'll use it from time to time, mostly so that there's a little prize at the end of each data processing pipeline. So we now have an explicit section on this will make this less mysterious.
 
 ### Overview
 
-Tidy datasets such as this can also be visualized without further ado using a systematic grammar [@wilkinson2012grammar] implemented in the `ggplot2` package ( @wickham2016ggplot2, this loads automatically with `tidyverse`). The `gapminder` examples I'll give today and tomorrow are either gratuitously lifted or modified from @healy2018data, which you can either purchase as the book (I'll show it to you), or refer to the free version online: [www.socviz.co](www.socviz.co). It's a fabulous book. 
+Tidy datasets such as this can also be visualized without further ado using a systematic grammar [@wilkinson2012grammar] implemented in the `ggplot2` package ( @wickham2016ggplot2, this loads automatically with `tidyverse`). The `gapminder` examples I'll give today and tomorrow are either gratuitously lifted or modified from @healy2018data, which you can either purchase as the book, or refer to the free version online: [www.socviz.co](www.socviz.co). It's a fabulous book. 
 
 NOTE: when following along in these examples, you should **type along**, and not copy-paste the code.
 
@@ -113,7 +110,7 @@ ggplot(gapminder, mapping = aes(x = gdpPercap, y = lifeExp, color = continent)) 
 	scale_x_log10(labels = dollar)
 ```
 
-It turns out that by specifying a nice large set of possible mappings, coordinate systems, geoms, and discrete and continous options for scaling mappings, that you can create just about any plot. For other tricky ones, there are usually packages available. Here's a nice overview of `ggplot2` functionality: [https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf)
+It turns out that by specifying a nice large set of possible mappings, coordinate systems, geoms, and discrete and continuous options for scaling mappings, that you can create just about any plot. For other tricky ones, there are usually packages available. Here's a nice overview of `ggplot2` functionality: [https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf)
 
 ### `geom`s and `facet`s
 
@@ -182,10 +179,10 @@ This probably sounds jargony, so let's hop to it:
 
 ## Verbs {.tabset}
 ### Overview
-Here are a selection of `dplyr` verbs. Some things to note: the first argument of each is a data object, usually something like a `data.frame`. These do things to the dataset, and they return the dataset back.
+Here are a selection of `dplyr` verbs. Some things to note: the first argument of each is a data object, usually something like a `data.frame`. These do things to the dataset, and they return the modified dataset back.
 
 1. `group_by()` allows operations on subgroups
-2. `pivot_longer()` make a wide range of columns tidy
+2. `pivot_longer()` make a wide range of columns to long format
 3. `pivot_wider()` does the inverse
 4. `mutate()` make new columns, potentially using other columns, no loss of rows
 5. `summarize()` aggregates over rows. Usually reduces nr of rows
@@ -193,7 +190,7 @@ Here are a selection of `dplyr` verbs. Some things to note: the first argument o
 7. `filter()` selects rows (subsets)
 
 
-We'll see other `dplyr` verbs here and there during this workshop.
+We'll see other `dplyr` verbs here and there during this module
 
 Flip through the tabs in order.
 
@@ -209,7 +206,7 @@ Grouping does not do anything to the data directly. All values will be identical
 
 NB: the object created here is used in the following code chunk.
 
-#### `gather()`
+#### `pivot_longer()`
 
 Here we use `pivot_longer()` to pull all the gapminder value columns into a single key-value pair, where the key is the variable column name, and value is the contents. The resulting `data.frame` is three times longer because there are three variable columns (and three key columns), and this mimics the setup of your own `DemoData` SQL database.
 
@@ -229,7 +226,7 @@ pivot_wider(gapminder_long, names_from = "varname", values_from = "value")
 ```
 
 #### `mutate()` 
-`mutate()` adds columns to, or modifies columns in, a `data.frame`/`tibble`. Think of the example of lifetable construction: You might start with deaths and exposures, and all other columns are created based on these. This is a case for `mutate()`. The main thing to remember is that `mutate()` does not change the number of rows. Keeping with our gapminder example, say we want to add a column for the mean life expectancy, but repeated for each row within each group. To get these means for each country, we'll want to group by country first (our previous grouping also grouped by year).
+`mutate()` adds columns to, or modifies columns in a `data.frame`/`tibble`. Think of the example of lifetable construction: You might start with deaths and exposures, and all other columns are created based on these. This is a case for `mutate()`. The main thing to remember is that `mutate()` does not change the number of rows. Keeping with our gapminder example, say we want to add a column for the mean life expectancy, but repeated for each row within each group. To get these means for each country, we'll want to group by country first (our previous grouping also grouped by year).
 
 ```{r}
 gap_grouped <- group_by(gapminder, country)
@@ -277,17 +274,17 @@ head(gap_summarize)
 You can get a lot of mileage out of `group_by()`, `mutate()` and `summarize()`.
 
 #### `select()` 
-`select()` picks out columns:
+`select()` picks out columns, and potentially renames them:
 
 ```{r}
-head(select(gapminder, country, gdpPercap))
+head(select(gapminder, country, GDP = gdpPercap))
 ```
 
 If data are grouped, the key columns are retained (and it tells you so in the console):
 
 ```{r}
 gap_grouped <- group_by(gapminder, country, year)
-head(select(gap_grouped, gdpPercap))
+head(select(gap_grouped, GDP = gdpPercap))
 ```
 
 #### `filter()` 
@@ -305,6 +302,8 @@ str(gap_filtered)
 There are three logical expressions here, each producing a value of TRUE or FALSE for each row. Comma separation between these is interpreted as `&`, so the full logical expression evaluated is interpreted as: 
 `year >= 2000 & year <= 2010 & continent == "Africa"`
 Note that double equals `==` is for the logical evaluation of equality! The other logical operators are pretty straightforward. A vertical bar `|` is used for *or*.
+
+* There are other packages in `R` that have functions called `filter()`, uh oh! If this ever comes up and causes problems for you, just write it as `dplyr::filter()` instead and it won't get mixed up.
 
 #### `ungroup()` 
 
@@ -390,15 +389,15 @@ Note: We usually construct pipelines like these incrementally, often checking as
 remotes::install_github("daranzolin/ViewPipeSteps")
 ```
 
-Select this text, then from the addins pulldown, select `View Pipe Chain Steps`
+Select this text, then from the addins menu in `RStudio`, select `View Pipe Chain Steps`
 ```{r}
 library(ViewPipeSteps)
 gapminder %>% 
 	group_by(country) %>% 
-    mutate(mean_lifeExp_country = mean(lifeExp)) %>% 
+  mutate(mean_lifeExp_country = mean(lifeExp)) %>% 
 	ungroup() %>% 
-    group_by(year) %>% 
-    mutate(mean_lifeExp_year = mean(lifeExp)) 
+  group_by(year) %>% 
+  mutate(mean_lifeExp_year = mean(lifeExp)) 
 ```
 
 Note also: We use indentation and alignment to make the code more legible.
@@ -434,7 +433,7 @@ ASFR <- read_excel(
                      "45" = "45-49")
 ```
 
-Here we have a 3-step pipeline! Yay. The first step is syntax to read in from a spreadsheet, generated interactively using the import data feature of rstudio. Copy. Paste. Bam. Step 2 `select()`s just the columns we want for now. Step 3 `rename()`s the columns manually to something useful. The pipe operator `%>%` take the object coming out of the function on the left and feeds it to the function on the right (by default as its first argument). These steps can be strung together into so-called data processing *pipelines*. 
+Here we have a 3-step pipeline! Yay. The first step is syntax to read in from a spreadsheet, generated interactively using the import data feature of `RStudio.` Copy. Paste. Bam. Step 2 `select()`s just the columns we want for now. Step 3 `rename()`s the columns manually to something useful. 
 
 Pipelines read like sentences. Because they are made of verbs and the pipe operator reads as *and then do this*.
 
@@ -455,11 +454,6 @@ ASFR <- ASFR %>%
   filter(TFR > 0)  # ASFR up top gets what comes out here
 ```
 
-The very first step could be written like this:
-```{r, eval = FALSE}
-  select(ASFR, -c(PeriodVerbose, TFR, Period))
-```
-
 What method do we use to split these data to single ages?
 
 Suggestions from the field:
@@ -469,9 +463,9 @@ Suggestions from the field:
 3. smooth spline through uniform repeated values in age groups (not constrained, but could work OK)
 4. monotonic spline through cumulative distribution
 5. use a fertility model, e.g. Coale-Trussel and pals
-6. Schmertmann [http://schmert.net/calibrated-spline/](http://schmert.net/calibrated-spline/) Super awesome love it
+6. TOPALS [http://schmert.net/calibrated-spline/](http://schmert.net/calibrated-spline/) Super awesome love it
 
-We will try the monotonic spline method because it seems easier to write fresh.
+We will try the monotonic spline method because it seems easier to write fresh, even though you probably wouldn't use this as your first choice in real applications.
 
 ```{r}
 mono_graduate <- function(Age5, asfr5){
@@ -492,7 +486,8 @@ mono_graduate <- function(Age5, asfr5){
   # fit the spline
   xy <- splinefun(x = Age5,
             y = casfr5,
-            method = "monoH.FC")(predict_ages)
+            method = "monoH.FC",
+            ties = "min")(predict_ages)
   # return tibble
   tibble(Age = 15:49, 
          asfr = diff(xy))
