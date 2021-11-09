@@ -229,6 +229,7 @@ MIG %>%
                names_sep = "_",
                values_to = "immigrations") %>% 
   filter(!is.na(immigrations)) %>% 
+  pull(age) %>% unique()
   mutate(age = gsub(pattern = "From ", replacement = "", age),
          age = gsub(pattern = " years", replacement = "", age),
          age = recode(age,
@@ -263,7 +264,7 @@ MIG %>%
 
 Here's a redux done after doing some more pattern logic: just stick with the `gsub()` strategy and try to get `age` to conform with `"lower to upper"`. Then we can define a new column called `age_interval`, bearing in mind the irregularity of labels. I decided NOT to throw out NAs yet. Some of them should be 0s, others are actually NAs, and we're not ready to detect which are which. This will be narrated and further annotated in class.
 ```{r}
-MIG2 <-
+
   MIG %>% 
   select(-contains("junk")) %>% 
   pivot_longer(3:ncol(.), 
@@ -277,24 +278,17 @@ MIG2 <-
          age = gsub(pattern = "or over", replacement = "to Inf",age)) %>% 
   separate(age, into = c("age","upper"), sep = " to ") %>% 
   mutate(age_interval = as.numeric(upper) - as.integer(age),
-         age_interval = ifelse(age == "0", age_interval, age_interval + 1),
-         immigrations = ifelse(is.na(immigrations),0,immigrations)) %>% 
-  group_by(destination_country, year, cat) %>% 
-  mutate(
-    immigrations = as.numeric(immigrations),
-    keep = sum(immigrations) > 0) %>% 
-  ungroup() %>% 
-  filter(keep) %>% 
+         age_interval = ifelse(age == "0", age_interval, age_interval + 1)) %>% 
   group_by(destination_country, year, cat, age) %>% 
   mutate(keep = age_interval == min(age_interval)) %>% 
   ungroup() %>% 
-  group_by(destination_country, year, cat, age_interval) %>%
-  mutate(keep = case_when(is.infinite(age_interval) ~ age == min(age),
-                          age %in% c("Total","Unknown") ~ TRUE,
+  mutate(keep = case_when(age %in% c("Total","Unknown") ~ TRUE,
                           TRUE ~ keep)) %>% 
-  ungroup() %>% 
   filter(keep) %>% 
-  select(destination_country, year, cat, age, age_interval, immigrations)
+  select(destination_country, year, cat, age, age_interval, immigrations) %>%   
+  filter(destination_country == "Spain",
+         year == 2011,
+         cat == "Total") %>% View()
 
 MIG2 %>% filter(destination_country == "Austria", cat == "Total", year == 2010) %>% View()
 ```
