@@ -2,7 +2,7 @@
 pagetitle: "Session 1"
 title: | 
   | Data Wrangling for EDSDers
-  | \vspace{1.5cm} \LARGE\emph{Session 2}
+  | \vspace{1.5cm} \LARGE\emph{Session 1}
 author: |
   | 8-11 Nov, 2021
   | Tim Riffe

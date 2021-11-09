@@ -194,13 +194,14 @@ For this example we will wrangle a dataset of immigration from Eurostat.
 library(readxl)
 "Data/MIGR_IMM1CTZ__custom.xlsx"
 MIG <- read_excel("Data/MIGR_IMM1CTZ__custom.xlsx", 
-    sheet = "Sheet 1", range = "A11:DR1281", 
+    sheet = "Sheet 1", range = "A12:DR1281", 
     na = ":")
 
 # This was manual, hackish coding to get the columns
 # right, but if there's an elegant solution I'll show
 # it to you tomorrow.
 years <- 2010:2019
+
 cat   <- c("Total",	"junk1", 
            "Reporting country", "junk2",
            "EU28", "junk3",
@@ -220,7 +221,6 @@ colnames(MIG) <- my_colnames
 ```
 
 Moral of the story, YOU WILL ALWAYS WIN. We now need to recode `age`, to `pivot_longer()`, and throw out the `junk` columns.
-
 ```{r}
 MIG %>% 
   select(-contains("junk")) %>% 
@@ -261,6 +261,95 @@ MIG %>%
                       "Unknown"  = "UNK")) 
 ```
 
+Here's a redux done after doing some more pattern logic: just stick with the `gsub()` strategy `age` conforms with `"lower to upper"`. Then we can define a new column called `age_interval`, bearing in mind the irregularity of labels. I decided NOT to throw out NAs yet. Some of them should be 0s, others are actually NAs, and we're not ready to detect which are which.
+```{r}
+MIG2 <-
+  MIG %>% 
+  select(-contains("junk")) %>% 
+  pivot_longer(3:ncol(.), 
+               names_to = c("year","cat"),
+               names_sep = "_",
+               values_to = "immigrations") %>% 
+  filter(!is.na(immigrations)) %>% 
+  mutate(age = gsub(pattern = "From ", replacement = "", age),
+         age = gsub(pattern = " years", replacement = "", age),
+         age = gsub(pattern = "Less than", replacement = "0 to", age),
+         age = gsub(pattern = "or over", replacement = "to Inf",age)) %>% 
+  separate(age, into = c("age","upper"), sep = " to ") %>% 
+  mutate(age_interval = as.numeric(upper) - as.integer(age),
+         age_interval = ifelse(age == "0", age_interval, age_interval + 1),
+         immigrations = ifelse(is.na(immigrations),0,immigrations)) %>% 
+  group_by(destination_country, year, cat) %>% 
+  mutate(
+    immigrations = as.numeric(immigrations),
+    keep = sum(immigrations) > 0) %>% 
+  ungroup() %>% 
+  filter(keep) %>% 
+  group_by(destination_country, year, cat, age) %>% 
+  mutate(keep = age_interval == min(age_interval)) %>% 
+  ungroup() %>% 
+  group_by(destination_country, year, cat, age_interval) %>%
+  mutate(keep = case_when(is.infinite(age_interval) ~ age == min(age),
+                          age %in% c("Total","Unknown") ~ TRUE,
+                          TRUE ~ keep)) %>% 
+  ungroup() %>% 
+  filter(keep) %>% 
+  select(destination_country, year, cat, age, age_interval, immigrations)
+
+MIG2 %>% filter(destination_country == "Austria", cat == "Total", year == 2010) %>% View()
+```
+
+## Challenge
+
+Continue to get age to `integer` rather than character by either redistributing unknown ages (and removing total), or rescaling to total (and remove unknown ages). This will need to be independent by subgroup (country, year, cat?).
+
+subquestion: does each subgroup actually have a total? Here's a quick way to check
+```{r}
+MIG2$age %>% unique()
+```
+So, it's hard to say so far. How many distinct subgroups are there, and does each contain a total?
+
+```{r}
+MIG2 %>% select(destination_country, year, cat) %>% distinct() %>% nrow()
+sum(MIG2$age == "Total")
+```
+It looks like *yes*, so this means we can toss `age == "Unknown"` from the dataset, as it is redundant information. Then we can, for example, assume that counts of unknown age can be distributed proportionally to counts of known age within the same category. Here's one way to do that:
+```{r}
+MIG3 <-
+  MIG2 %>% 
+  filter(age != "Unknown") %>% 
+  group_by(destination_country, year, cat) %>% 
+  mutate(TOT = immigrations[age == "Total"]) %>%
+  filter(age != "Total") %>% 
+  mutate(immigrations = immigrations / sum(immigrations) * TOT) %>% 
+  ungroup() %>% 
+  mutate(age = as.integer(age)) %>% 
+  arrange(destination_country, year, cat, age) %>% 
+  select(-TOT)
+    
+```
+Now this is something a lot closer to useful for analysis!
+
+```{r}
+MIG3 %>% 
+  filter(year == 2010, cat == "Total") %>% 
+  ggplot(aes(x = age, y = immigrations, group = destination_country)) + 
+  geom_line()
+```
+Tough to compare because (i) we don't know denominators, and (ii) we have different magnitudes of migration flow. Let's at least try to solve (ii) to see how common the shape is:
+
+```{r}
+MIG3 %>% 
+  group_by(destination_country, cat, year) %>% 
+  mutate(prop = immigrations / sum(immigrations)) %>% 
+  ungroup() %>% 
+  filter(cat == "Total", year == 2010) %>% 
+  ggplot(aes(x = age, y = prop, group = destination_country)) + 
+  geom_line() 
+```
+Funny how simple *counts* can obtain such a regular shape, no? We notice one data quality suspect around age 65, possibly a filter mistake on our side or an irregularity in the original data, hard to see without investigation.
+
+Has the age pattern changed in later years? Any ideas how? or why?
 
 
 
