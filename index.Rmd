@@ -7,7 +7,7 @@ author: |
   | 8-11 Nov, 2021
   | Tim Riffe
   | Universidad del País Vasco \& Ikerbasque (Basque Foundation for Science)
-date: "8 Nov, 2020"
+date: "9 Nov, 2021"
 output:
   html_document:
     number_sections: yes
@@ -39,16 +39,22 @@ This index is to be updated as materials are finalized. It's more for posterity 
 
 [Session 1](Session1) (Monday, 8 Nov)
 
-1. [About me](Session#about-me)
-2. [About this module](Session#about-this-module)
-3. [Rmarkdown basics](Session#rmarkdown-basics)
-4. [Tidyverse basics](Session#tidy-data)
-5. [ggplot2 intro with gapminder](Session#basic-ggplot2-with-the-gapminder-data)
-6. [dplyr intro](Session#basic-dplyr)
-7. [UN fertility example](Session#examples)
+1. [About me](Session1#about-me)
+2. [About this module](Session1#about-this-module)
+3. [Rmarkdown basics](Session1#rmarkdown-basics)
+4. [Tidyverse basics](Session1#tidy-data)
+5. [ggplot2 intro with gapminder](Session1#basic-ggplot2-with-the-gapminder-data)
+6. [dplyr intro](Session1#basic-dplyr)
+7. [UN fertility example](Session1#examples)
 
 
 [Session 2](Session2) (Tuesday, 9 Nov)
+
+1. [Introduction](Session2#introduction)
+2. [Reading a fixed width file](Session2#reading-a-fixed-width-file)
+3. [Redistribute missing time of day](Session2#redistribute-missing-time-of-day)
+4. [Visualize it: surface](Session2#visualize-it-surface)
+5. [Visualize it: ridgeplot](Session2#visualize-it-ridgeplot)
 
 [Session 3](Session3) (Wednesday, 10 Nov)
 
