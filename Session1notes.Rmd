@@ -188,7 +188,7 @@ Note that the super secret ninja code for the invisible data passing through the
 
 ## Worked example
 
-For this example we will wrangle a dataset of immigration from Eurostat.
+For this example we will wrangle a dataset of immigration from Eurostat. We got the first part by clicking on the file in the `Rstudio` file browser, then selecting `import dataset`, then fidgeting with the parameter fields, and finally copy-pasting the code suggestion from the widget. It just grabs the data part and skips the header. We overwrite the header ourselves, which took some tricky manual pattern detection on our part. The reason why it's challenging is because the header is spread over multiple lines, which is non-standard, and a bit or a hurdle. If you google *R spreadsheet multiline header* you'll be directed to people's hackish solutions to this problem, which actually don't serve this example (I checked), so we stick with our manual column name creation, which we spot check against the spreadsheet to make sure it's right.
 
 ```{r}
 library(readxl)
@@ -220,7 +220,7 @@ colnames(MIG) <- my_colnames
 
 ```
 
-Moral of the story, YOU WILL ALWAYS WIN. We now need to recode `age`, to `pivot_longer()`, and throw out the `junk` columns.
+Column names for this example were a read challenge. Moral of the story, YOU WILL ALWAYS WIN. We now need to recode `age`, to `pivot_longer()`, and throw out the `junk` columns. This was the in-class solution:
 ```{r}
 MIG %>% 
   select(-contains("junk")) %>% 
@@ -261,7 +261,7 @@ MIG %>%
                       "Unknown"  = "UNK")) 
 ```
 
-Here's a redux done after doing some more pattern logic: just stick with the `gsub()` strategy `age` conforms with `"lower to upper"`. Then we can define a new column called `age_interval`, bearing in mind the irregularity of labels. I decided NOT to throw out NAs yet. Some of them should be 0s, others are actually NAs, and we're not ready to detect which are which.
+Here's a redux done after doing some more pattern logic: just stick with the `gsub()` strategy and try to get `age` to conform with `"lower to upper"`. Then we can define a new column called `age_interval`, bearing in mind the irregularity of labels. I decided NOT to throw out NAs yet. Some of them should be 0s, others are actually NAs, and we're not ready to detect which are which. This will be narrated and further annotated in class.
 ```{r}
 MIG2 <-
   MIG %>% 
@@ -303,14 +303,13 @@ MIG2 %>% filter(destination_country == "Austria", cat == "Total", year == 2010) 
 
 Continue to get age to `integer` rather than character by either redistributing unknown ages (and removing total), or rescaling to total (and remove unknown ages). This will need to be independent by subgroup (country, year, cat?).
 
-subquestion: does each subgroup actually have a total? Here's a quick way to check
-```{r}
-MIG2$age %>% unique()
-```
-So, it's hard to say so far. How many distinct subgroups are there, and does each contain a total?
+subquestion: does each subgroup actually have a total? Here's a spot check:
 
 ```{r}
-MIG2 %>% select(destination_country, year, cat) %>% distinct() %>% nrow()
+MIG2 %>% 
+  select(destination_country, year, cat) %>% 
+  distinct() %>% 
+  nrow()
 sum(MIG2$age == "Total")
 ```
 It looks like *yes*, so this means we can toss `age == "Unknown"` from the dataset, as it is redundant information. Then we can, for example, assume that counts of unknown age can be distributed proportionally to counts of known age within the same category. Here's one way to do that:
