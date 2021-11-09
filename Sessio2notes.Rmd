@@ -15,7 +15,7 @@ library(readxl)
 meta <- read_excel("Data/B2019meta.xls", range = "A4:F105")
 meta$Nombre %>% unique()
 our_subset <-
-meta %>% 
+  meta %>% 
   filter(Nombre %in% c("SEMANAS","CESAREA","MESPAR","EDADM",
                        "EDADP","PAISNACM","ESTUDIOM","NUMH",
                        "SEXO"))
@@ -78,6 +78,47 @@ Clarifying the exercise:
 3. tabulate `V24HN` crossed with `prenatal_proxy`, it will result in 4 rows!
 4. Calculate the 24-hour mortality probabilities: is there a notable difference or not? There might not be. Tip: try `pivot_wider()` to get numbers side-by-side for easier calculations in `mutate()`.
 
+Here's Tim's solution, piping straight to a plot comparing the mortality probabilities, no be narrated Wednesday.
+```{r}
+library(readxl)
+library(readr)
+library(tidyverse)
+meta <- read_excel("Data/B2019meta.xls", range = "A4:F105")
+meta$Nombre %>% unique()
+our_subset <-
+  meta %>% 
+  filter(Nombre %in% c("SEMANAS","CESAREA","MESPAR","EDADM",
+                       "EDADP","PAISNACM","ESTUDIOM","NUMH",
+                       "SEXO","V24HN"))
+our_subset %>% pull(Nombre)
+starts   <- our_subset %>% pull(Inicio)
+ends     <- our_subset %>% pull(Fin)
+varnames <- c("month","cesarian","weeks","country_birth_mo",
+              "educ_mo","nchild","age_mo","age_fa","sex","surv")
+
+read_fwf(file = "Data/datos_nacimientos19/B2019.txt",
+         col_positions = fwf_positions(
+           start = starts,
+           end = ends,
+           col_names = varnames),
+         show_col_types = FALSE) %>% 
+  mutate(prenatal_maybe = !is.na(weeks)) %>% 
+  count(prenatal_maybe, surv) %>% 
+  pivot_wider(names_from = surv, values_from = n) %>% 
+  mutate(
+    size = `1` + `2`,
+    q24 = `2`/size,
+    high = qbinom(p = .975, size = size, prob = q24),
+    low = qbinom(p = .025, size = size, prob = q24),
+    q24_low = low / size,
+    q24_high = high / size) %>% 
+  ggplot(aes(x = prenatal_maybe, 
+             y = q24, 
+             ymin = q24_low, 
+             ymax = q24_high )) +
+  geom_point()+
+  geom_pointrange()
+```
 
 
 
