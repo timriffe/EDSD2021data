@@ -264,7 +264,7 @@ MIG %>%
 
 Here's a redux done after doing some more pattern logic: just stick with the `gsub()` strategy and try to get `age` to conform with `"lower to upper"`. Then we can define a new column called `age_interval`, bearing in mind the irregularity of labels. I decided NOT to throw out NAs yet. Some of them should be 0s, others are actually NAs, and we're not ready to detect which are which. This will be narrated and further annotated in class.
 ```{r}
-
+MIG2 <- 
   MIG %>% 
   select(-contains("junk")) %>% 
   pivot_longer(3:ncol(.), 
@@ -285,12 +285,9 @@ Here's a redux done after doing some more pattern logic: just stick with the `gs
   mutate(keep = case_when(age %in% c("Total","Unknown") ~ TRUE,
                           TRUE ~ keep)) %>% 
   filter(keep) %>% 
-  select(destination_country, year, cat, age, age_interval, immigrations) %>%   
-  filter(destination_country == "Spain",
-         year == 2011,
-         cat == "Total") %>% View()
+  select(destination_country, year, cat, age, age_interval, immigrations) 
 
-MIG2 %>% filter(destination_country == "Austria", cat == "Total", year == 2010) %>% View()
+
 ```
 
 ## Challenge
@@ -328,6 +325,10 @@ MIG3 %>%
   filter(year == 2010, cat == "Total") %>% 
   ggplot(aes(x = age, y = immigrations, group = destination_country)) + 
   geom_line()
+
+MIG3 %>% 
+  filter(year == 2010, cat == "Total", age == 20) %>% 
+  arrange(immigrations) %>% View()
 ```
 Tough to compare because (i) we don't know denominators, and (ii) we have different magnitudes of migration flow. Let's at least try to solve (ii) to see how common the shape is:
 
@@ -336,7 +337,7 @@ MIG3 %>%
   group_by(destination_country, cat, year) %>% 
   mutate(prop = immigrations / sum(immigrations)) %>% 
   ungroup() %>% 
-  filter(cat == "Total", year == 2010) %>% 
+  filter(cat == "Total", year == 2015) %>% 
   ggplot(aes(x = age, y = prop, group = destination_country)) + 
   geom_line() 
 ```
