@@ -1,0 +1,100 @@
+---
+title: "Session 2 Notes"
+author: "Tim Riffe"
+date: "11/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Flat files
+```{r}
+library(readxl)
+meta <- read_excel("Data/B2019meta.xls", range = "A4:F105")
+meta$Nombre %>% unique()
+our_subset <-
+meta %>% 
+  filter(Nombre %in% c("SEMANAS","CESAREA","MESPAR","EDADM",
+                       "EDADP","PAISNACM","ESTUDIOM","NUMH",
+                       "SEXO"))
+our_subset %>% pull(Nombre)
+starts   <- our_subset %>% pull(Inicio)
+ends     <- our_subset %>% pull(Fin)
+varnames <- c("month","cesarian","weeks","country_birth_mo",
+              "educ_mo","nchild","age_mo","age_fa","sex")
+
+library(readr)
+
+B2019 <- read_fwf(file = "Data/datos_nacimientos19/B2019.txt",
+         col_positions = fwf_positions(
+           start = starts,
+           end = ends,
+           col_names = varnames))
+B2019
+```
+
+
+Strategy for tabulating individual-row files, like this. Note, right now each row is a baby, not a baby count per se.
+
+```{r}
+weeks_age <-
+  B2019 %>% 
+  count(weeks, age_mo) %>% 
+  arrange(weeks, age_mo) 
+
+
+B2019$weeks %>% is.na() %>% sum()
+# B2019 %>% 
+#   group_by(weeks, age_mo) %>% 
+#   summarize(n = n(), .groups = "drop")
+```
+
+Take a quick look:
+
+```{r}
+
+weeks_age %>% 
+  ggplot(aes(x = weeks, y = n, group = age_mo,
+             color = age_mo)) + 
+  geom_line()
+
+weeks_age %>% 
+  ggplot(aes(x = weeks, y = age_mo, fill = n)) +
+  geom_tile()
+
+```
+
+# Exercises
+
+Is there a variable in this dataset that might indicate whether the mother/baby had prenatal visits with a doctor? If not, might we consider missingness of gestational age as an indicator of whether or not the pregnancy received prenatal care? Because, seriously folks, this is one the very first things a doctor would determine in a visit, and it's very unlikely to be missing if care was received. But then, maybe there's a variable for this already in the data, I didn't check.
+
+What is a good indicator of outcome, aside from APGAR score (which isn't in this data anyway, although it is given in the US microdata)? How about 24 hour survival! 
+
+Clarifying the exercise:
+1. re-read in the data, including the `V24HN` variable, which indicates 24 hour survival.
+2. construct an indicator variable that might serve as a proxy for whether the pregnancy received prenatal care / regular doctor visits: namely, Tim's bet is that missingness in gestational age might pick up signal in this. So make a binary variable that indicates whether gestational age is missing or not (we can already do this with the variables read in).
+3. tabulate `V24HN` crossed with `prenatal_proxy`, it will result in 4 rows!
+4. Calculate the 24-hour mortality probabilities: is there a notable difference or not? There might not be. Tip: try `pivot_wider()` to get numbers side-by-side for easier calculations in `mutate()`.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
