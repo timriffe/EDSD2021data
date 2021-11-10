@@ -58,5 +58,12 @@ This index is to be updated as materials are finalized. It's more for posterity 
 
 [Session 3](Session3) (Wednesday, 10 Nov)
 
+1. [Introduction](Session3#introduction)
+2. [Prepare World Values Survey data](Session3#world-value-survey-wvs)
+3. [Prepare WPP data](Session3#world-population-prospects-wpp)
+4. [Join datasets](Session3#the-join)
+5. [Cleaning & Fun](Session3#final-cleaning-and-fun)
+
+
 [Session 4](Session4) (Thursday, 11 Nov)
 
