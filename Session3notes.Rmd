@@ -40,8 +40,7 @@ time_use_url <- "https://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDo
 download.file(time_use_url,
               destfile = "Data/time_use.tsv.gz")
 
-time_use <- read_tsv("Data/time_use.tsv.gz",
-                     na = ":") %>% 
+time_use <- read_tsv("Data/time_use.tsv.gz") %>% 
   separate(1,
            into = c("unit", "sex", "age", "acl100","ISO2"),
            sep = ",") 
@@ -89,7 +88,8 @@ time_use <-
   pivot_longer(`2010`:`2000`, 
                names_to = "year", 
                values_to = "value") %>% 
-  filter(!is.na(value))
+  filter(value != ":") %>% 
+  mutate(value = as.numeric(value))
 ```
 
 # Covert times to proportions of the day (...year?)
@@ -110,15 +110,32 @@ time_use <-
              values_from = value) %>% 
   mutate(TIME_SP = hour_to_fraction(TIME_SP)) %>% 
   select(ISO2, Description, sex, age, year, TIME_SP)
-
 ```
-
-
-
 
 # Split age groups to 5-years
 
+For splitting age groups, we have several choices that are more and less aggressive and consequential.
 ```{r}
+split_chunk <- function(chunk){
+  xout <- seq(15, 70, by = 5)
+  approx(x = chunk$age,
+                    y = chunk$TIME_SP,
+                    xout = xout,
+                    method = "constant",
+                    rule = 2) %>% 
+    as_tibble() %>% 
+    rename("age" = "x",
+           "TIME_SP" = "y")
+}
+time_use <-
+  time_use %>%
+  filter(age != "65+") %>% 
+  mutate(age = as.integer(age)) %>% 
+  group_by(ISO2, year, Description, sex) %>% 
+  do(split_chunk(chunk = .data)) %>% 
+  ungroup()
+
+
 
 ```
 
