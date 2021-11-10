@@ -103,7 +103,7 @@ read_fwf(file = "Data/datos_nacimientos19/B2019.txt",
            end = ends,
            col_names = varnames),
          show_col_types = FALSE) %>% 
-  mutate(prenatal_maybe = !is.na(weeks)) %>% 
+  mutate(prenatal_maybe = ifelse(is.na(weeks),"no","yes")) %>% 
   count(prenatal_maybe, surv) %>% 
   pivot_wider(names_from = surv, values_from = n) %>% 
   mutate(
@@ -117,8 +117,13 @@ read_fwf(file = "Data/datos_nacimientos19/B2019.txt",
              y = q24, 
              ymin = q24_low, 
              ymax = q24_high )) +
-  geom_point()+
-  geom_pointrange()
+  geom_point() +
+  geom_pointrange() +
+  labs(x = "prenatal visit proxy",
+       y = "24-hour death probability",
+       title = "We know that prenatal care improves newborn health",
+       subtitle = "What if we consider missingness in gestational duration as a proxy for prenatal care\nand use 24 mortality as a proxy for newborn health?",
+       caption = "Data: microdatos de nacimientos; ine.es")
 ```
 
 
