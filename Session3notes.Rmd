@@ -143,8 +143,15 @@ Here you'll hammer the WPP data into shape and merge it to the time use data. Yo
 4. Add a column called `sex` using the same codes as in the time use data.
 5. combine the datasets (stacked) using `bind_rows()`
 6. multiply population counts by 1000 to undo what WPP did to them
+7. convert the WPP country codes to ISO2 using the `countrycode` package. It has a function called `countrycode()`. The origin codes are coming from the `"un"`, and the destination codes are called `"iso2c"`. 
+8. join the datasets
+9. multiply `TIME_SP` into population counts
 
-
+```{r}
+library(wpp2019)
+data(popF)
+data(popM)
+```
 
 
 
