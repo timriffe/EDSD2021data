@@ -1,0 +1,124 @@
+---
+title: "Session 3 notes"
+author: "Tim Riffe"
+date: "11/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Tiny dataset examples
+
+```{r}
+A <- data.frame(x = 1:4, y = c("a","b","c","d"), z1 = rnorm(4))
+B <- data.frame(x = c(1,4,4,5,5), y = c("a","b","y","a","a"), z2 = rnorm(5))
+A
+B
+
+left_join(A,B, by = c("x","y"))
+right_join(A,B, by = c("x","y"))
+
+inner_join(A, B, by = c("x","y"))
+full_join(A, B, by = c("x","y"))
+```
+
+The name of the join operation indicates the filter / dominance. So, in a left join we can't lose rows of the left dataset, and in a right join the right side dataset is preserved. An inner join only keeps strict matches, and a full join keeps everything.
+
+Never accidentally include a data column (values) in the `by` argument. Always try to include things with clean comparable categories in the `by` columns. You can also call those keys.
+
+
+# Worked examples
+
+We saw two ways to get online data into `R`: 1) `download.file()`, then read it in, 2) read it directly in, as long as the file is directly available. The main time use file has two separators in it, both tabs and commas. So we do a secondary split of the comma block using `separate()`.
+
+```{r}
+library(readr)
+library(tidyverse)
+time_use_url <- "https://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?file=data/tus_00age.tsv.gz"
+download.file(time_use_url,
+              destfile = "Data/time_use.tsv.gz")
+
+time_use <- read_tsv("Data/time_use.tsv.gz",
+                     na = ":") %>% 
+  separate(1,
+           into = c("unit", "sex", "age", "acl100","ISO2"),
+           sep = ",") 
+# this will tell us what the codes mean
+time_use_codes <- read_csv("https://raw.githubusercontent.com/timriffe/EDSD2021data/master/Data/time_use_codes.csv")
+```
+
+# First recode age
+
+We have one wide redundant
+```{r}
+time_use %>% pull(age) %>% unique()
+time_use <- 
+  time_use %>% 
+  filter(!age %in% c("TOTAL", "Y20-74")) %>% 
+  mutate(age = case_when(
+    age == "Y15-20" ~ "15",
+    age == "Y20-24" ~ "20",
+    age == "Y25-44" ~ "25",
+    age == "Y45-64" ~ "45",
+    age == "Y65-74" ~ "65",
+    age == "Y_GE65" ~ "65+"
+  ))
+```
+Note to self, we have redundancy over age 65. We can either truncate at age 75 or attempt to back out an open category for 75+. 
+
+# add activity descriptions
+
+We need to make the `by` name match. Well, technically we could make it work without having the column names match, but then you'd need to read the help file, and this is always easier to remember.
+```{r}
+time_use <-
+  time_use_codes %>% 
+  rename("acl100" = "TOTAL",
+         "Description" = "Total") %>% 
+  right_join(time_use, by = "acl100")
+```
+
+# Stack years
+
+We have 2000 and 2010 in columns, so how about we pivot those to something longer?
+```{r}
+
+time_use <-
+  time_use %>% 
+  pivot_longer(`2010`:`2000`, 
+               names_to = "year", 
+               values_to = "value") %>% 
+  filter(!is.na(value))
+```
+
+# Covert times to proportions of the day (...year?)
+
+```{r}
+hour_to_fraction <- function(hour_min){
+  tibble(hour_min) %>% 
+  separate(col = hour_min, into = c("hours","minutes"), sep = ":") %>% 
+    mutate(
+      minutes = as.integer(minutes),
+      hours = as.integer(hours),
+      frac = (minutes / 60 + hours) / 24) %>% 
+    pull(frac)
+}
+time_use <-
+  time_use %>% 
+  pivot_wider(names_from = unit,
+             values_from = value) %>% 
+  mutate(TIME_SP = hour_to_fraction(TIME_SP)) %>% 
+  select(ISO2, Description, sex, age, year, TIME_SP)
+
+```
+
+
+
+
+# Split age groups to 5-years
+
+```{r}
+
+```
+
