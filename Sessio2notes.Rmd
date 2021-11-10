@@ -90,9 +90,10 @@ our_subset <-
   filter(Nombre %in% c("SEMANAS","CESAREA","MESPAR","EDADM",
                        "EDADP","PAISNACM","ESTUDIOM","NUMH",
                        "SEXO","V24HN"))
-our_subset %>% pull(Nombre)
 starts   <- our_subset %>% pull(Inicio)
 ends     <- our_subset %>% pull(Fin)
+# this vector is just to tell us the variable order
+our_subset %>% pull(Nombre)
 varnames <- c("month","cesarian","weeks","country_birth_mo",
               "educ_mo","nchild","age_mo","age_fa","sex","surv")
 
