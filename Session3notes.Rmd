@@ -88,8 +88,7 @@ time_use <-
   pivot_longer(`2010`:`2000`, 
                names_to = "year", 
                values_to = "value") %>% 
-  filter(value != ":") %>% 
-  mutate(value = as.numeric(value))
+  filter(value != ":") 
 ```
 
 # Covert times to proportions of the day (...year?)
