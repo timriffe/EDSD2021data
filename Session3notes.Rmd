@@ -133,8 +133,20 @@ time_use <-
   group_by(ISO2, year, Description, sex) %>% 
   do(split_chunk(chunk = .data)) %>% 
   ungroup()
-
-
-
 ```
+
+# Exercise
+Here you'll hammer the WPP data into shape and merge it to the time use data. You'll want to only keep the country-year-sex-age combinations present in the time use data. 
+1. install `wpp2019` using `install.packages()`
+2. load the population data using `data(popM)` and `data(popF)`
+3. These data are wide (years in columns). use `pivot_longer()` to stack years.
+4. Add a column called `sex` using the same codes as in the time use data.
+5. combine the datasets (stacked) using `bind_rows()`
+6. multiply population counts by 1000 to undo what WPP did to them
+
+
+
+
+
+
 
