@@ -147,11 +147,132 @@ Here you'll hammer the WPP data into shape and merge it to the time use data. Yo
 8. join the datasets
 9. multiply `TIME_SP` into population counts
 
+Observation from Sebastian: the 2-letter country codes in the time use data are not strictly ISO2 codes. There are differences for GB (time use) vs UK (ISO2), and for Greece as well. You'll probably want to correct the time use country codes, maybe with `case_when()`, or else you'll lose those countries.
+
 ```{r}
 library(wpp2019)
 data(popF)
 data(popM)
 ```
+
+Don't forget Perozzo!
+```{r}
+library(readr)
+library(tidyverse)
+
+# helper functions:
+# convert hour:min to day fractions
+hour_to_fraction <- function(hour_min){
+  tibble(hour_min) %>% 
+  separate(col = hour_min, into = c("hours","minutes"), sep = ":") %>% 
+    mutate(
+      minutes = as.integer(minutes),
+      hours = as.integer(hours),
+      frac = (minutes / 60 + hours) / 24) %>% 
+    pull(frac)
+}
+
+# our custom age-graduation function, simple method
+split_chunk <- function(chunk){
+  xout <- seq(15, 70, by = 5)
+  approx(x = chunk$age,
+                    y = chunk$TIME_SP,
+                    xout = xout,
+                    method = "constant",
+                    rule = 2) %>% 
+    as_tibble() %>% 
+    rename("age" = "x",
+           "TIME_SP" = "y")
+}
+
+# read in the rather knarly time use aggregates
+time_use_url <- "https://ec.europa.eu/eurostat/estat-navtree-portlet-prod/BulkDownloadListing?file=data/tus_00age.tsv.gz"
+
+time_use <- read_tsv(time_use_url) %>% 
+  separate(1,
+           into = c("unit", "sex", "age", "acl100","ISO2"),
+           sep = ",") 
+
+# this will tell us what the codes mean
+codes_url <-"https://raw.githubusercontent.com/timriffe/EDSD2021data/master/Data/time_use_codes.csv"
+time_use_codes <- read_csv(codes_url) %>% 
+  rename("acl100" = "TOTAL",
+         "Description" = "Total")
+
+
+time_use <-
+  time_use %>% 
+  filter(!age %in% c("TOTAL", "Y20-74", "Y_GE65")) %>% 
+  mutate(age = case_when(
+    age == "Y15-20" ~ "15",
+    age == "Y20-24" ~ "20",
+    age == "Y25-44" ~ "25",
+    age == "Y45-64" ~ "45",
+    age == "Y65-74" ~ "65")) %>% 
+  left_join(time_use_codes, by = "acl100") %>% 
+  pivot_longer(`2010`:`2000`, 
+               names_to = "year", 
+               values_to = "value") %>% 
+  filter(value != ":", 
+         unit == "TIME_SP") %>% 
+  mutate(TIME_SP = hour_to_fraction(value),
+         age = as.integer(age)) %>% 
+  select(ISO2, Description, sex, age, year, TIME_SP) %>% 
+  group_by(ISO2, year, Description, sex) %>% 
+  do(split_chunk(chunk = .data)) %>% 
+  ungroup()
+
+
+```
+
+# prepare WPP data
+```{r}
+library(wpp2019)
+library(countrycode)
+data(popM)
+data(popF)
+popM <-
+  popM %>% 
+  mutate(sex = "M")
+popF <- 
+  popF %>% 
+  mutate(sex = "F")
+
+popMF <- 
+  bind_rows(popM, popF) %>% 
+  pivot_longer(`1950`:`2020`, 
+               names_to = "year", 
+               values_to = "pop") %>% 
+  separate(age, 
+           into = c("age",NA), 
+           sep = c("-"), 
+           fill="left") %>% 
+  filter(!is.na(age)) %>% 
+  pivot_wider(names_from = "sex", 
+              values_from = "pop") %>% 
+  mutate(`T` = M + F) %>% 
+  pivot_longer(M:`T`, 
+               names_to = "sex", 
+               values_to = "pop") %>% 
+  mutate(ISO2 = countrycode(country_code, 
+                            origin = "un", 
+                            destination = "iso2c", 
+                            warn = FALSE),
+         age = as.integer(age),
+         pop = pop * 1000) %>% 
+  filter(!is.na(ISO2)) %>% 
+  select(ISO2, name, year, sex, age, pop)
+```
+
+Ready to join, just need a last minute adjustment to country codes in time use data. Turns out Eurostat has its own codes that are not ISO2, even though these coincide most of the time...
+```{r}
+joined <-
+  time_use %>% 
+  mutate(ISO2 = countrycode(ISO2, origin = "eurostat", destination = "iso2c")) %>% 
+  left_join(popMF, by = c("ISO2", "year","sex","age"))
+
+```
+
 
 
 
