@@ -155,7 +155,7 @@ data(popF)
 data(popM)
 ```
 
-Don't forget Perozzo!
+
 ```{r}
 library(readr)
 library(tidyverse)
@@ -221,8 +221,6 @@ time_use <-
   group_by(ISO2, year, Description, sex) %>% 
   do(split_chunk(chunk = .data)) %>% 
   ungroup()
-
-
 ```
 
 # prepare WPP data
@@ -245,12 +243,12 @@ popMF <-
                values_to = "pop") %>% 
   separate(age, 
            into = c("age",NA), 
-           sep = c("-"), 
+           sep = "-", 
            fill="left") %>% 
   filter(!is.na(age)) %>% 
   pivot_wider(names_from = "sex", 
               values_from = "pop") %>% 
-  mutate(`T` = M + F) %>% 
+  mutate(`T` = M + `F`) %>% 
   pivot_longer(M:`T`, 
                names_to = "sex", 
                values_to = "pop") %>% 
@@ -268,7 +266,9 @@ Ready to join, just need a last minute adjustment to country codes in time use d
 ```{r}
 joined <-
   time_use %>% 
-  mutate(ISO2 = countrycode(ISO2, origin = "eurostat", destination = "iso2c")) %>% 
+  mutate(ISO2 = countrycode(ISO2, 
+                            origin = "eurostat", 
+                            destination = "iso2c")) %>% 
   left_join(popMF, by = c("ISO2", "year","sex","age"))
 
 ```
